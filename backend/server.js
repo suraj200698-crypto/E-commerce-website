@@ -18,7 +18,6 @@ import connectDB from "./db/cannect.js";
 // MODELS
 // ======================================================
 
-import User from "./models/userModel.js";
 import Product from "./models/productModel.js";
 import Order from "./models/orderModel.js";
 
@@ -77,6 +76,10 @@ console.log("==========================================");
 // ======================================================
 
 const allowedOrigins = [
+  // ====================================================
+  // LOCAL DEVELOPMENT
+  // ====================================================
+
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
@@ -86,12 +89,18 @@ const allowedOrigins = [
   "http://127.0.0.1:5174",
   "http://127.0.0.1:5175",
   "http://127.0.0.1:5176",
+
+  // ====================================================
+  // PRODUCTION FRONTEND
+  // ====================================================
+
+  "https://ecoshop-frontend-6cje.onrender.com",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Requests such as Postman/curl without Origin
+      // Postman / curl / server-to-server requests
       if (!origin) {
         return callback(null, true);
       }
@@ -173,24 +182,6 @@ app.get("/api/admin-test", (req, res) => {
 // ======================================================
 // PUBLIC DASHBOARD STATS
 // ======================================================
-//
-// IMPORTANT:
-//
-// Ye route PUBLIC hai.
-// Isme kisi customer ka:
-// - name
-// - email
-// - address
-// - phone
-// - order details
-//
-// return nahi hote.
-//
-// Sirf aggregate/general statistics return hote hain.
-//
-// GET /api/private-data/public-stats
-//
-// ======================================================
 
 app.get(
   "/api/private-data/public-stats",
@@ -201,7 +192,6 @@ app.get(
         totalOrders,
       ] = await Promise.all([
         Product.countDocuments(),
-
         Order.countDocuments(),
       ]);
 
@@ -305,28 +295,6 @@ app.use(
 // ======================================================
 // ADMIN ROUTES
 // ======================================================
-//
-// IMPORTANT:
-//
-// adminRoute ke andar:
-//
-// authMiddleware
-// +
-// adminMiddleware
-//
-// already configured hain.
-//
-// Isliye:
-//
-// GET  /api/admin/users
-// GET  /api/admin/orders
-// PUT  /api/admin/orders/:orderId
-// DELETE /api/admin/users/:userId
-// GET  /api/admin/dashboard
-//
-// sirf authenticated admin ke liye available hain.
-//
-// ======================================================
 
 console.log("Loading Admin Routes...");
 
@@ -354,15 +322,6 @@ app.get(
 
 // ======================================================
 // PRIVATE DATA ROUTES
-// ======================================================
-//
-// PRIVATE ADMIN ROUTES
-//
-// /api/private-data
-//
-// privateDataRoute ke andar authentication/
-// authorization configured hona chahiye.
-//
 // ======================================================
 
 console.log(
