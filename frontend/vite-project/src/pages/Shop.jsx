@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import ProductGrid from "../components/ProductGrid";
 
+// =====================================================
+// LIVE BACKEND URL
+// =====================================================
+
+const API_URL = "https://e-commerce-website-i3qw.onrender.com";
+
 const Shop = ({
   onAddToCart,
   onToggleWishlist,
@@ -34,7 +40,7 @@ const Shop = ({
   const productsPerPage = 4;
 
   // =====================================================
-  // LOAD PRODUCTS FROM BACKEND
+  // LOAD PRODUCTS FROM LIVE BACKEND
   // =====================================================
 
   useEffect(() => {
@@ -42,9 +48,12 @@ const Shop = ({
       try {
         setLoading(true);
 
-        const response = await fetch("http://localhost:8000/api/products");
+        const response = await fetch(`${API_URL}/api/products`);
 
         const data = await response.json();
+
+        console.log("SHOP PRODUCTS STATUS:", response.status);
+        console.log("SHOP PRODUCTS RESPONSE:", data);
 
         if (data.success) {
           const formattedProducts = data.products.map((product) => ({
@@ -58,7 +67,9 @@ const Shop = ({
 
           if (formattedProducts.length > 0) {
             const highestPrice = Math.max(
-              ...formattedProducts.map((product) => Number(product.price) || 0),
+              ...formattedProducts.map(
+                (product) => Number(product.price) || 0,
+              ),
             );
 
             setMaxProductPrice(highestPrice);
@@ -132,37 +143,54 @@ const Shop = ({
     // ================= STOCK =================
 
     if (inStockOnly) {
-      filtered = filtered.filter((product) => product.inStock === true);
+      filtered = filtered.filter(
+        (product) => product.inStock === true,
+      );
     }
 
     // ================= SORT =================
 
     switch (sortBy) {
       case "price-low":
-        filtered.sort((a, b) => Number(a.price) - Number(b.price));
+        filtered.sort(
+          (a, b) => Number(a.price) - Number(b.price),
+        );
         break;
 
       case "price-high":
-        filtered.sort((a, b) => Number(b.price) - Number(a.price));
+        filtered.sort(
+          (a, b) => Number(b.price) - Number(a.price),
+        );
         break;
 
       case "rating":
-        filtered.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+        filtered.sort(
+          (a, b) =>
+            Number(b.rating || 0) -
+            Number(a.rating || 0),
+        );
         break;
 
       case "newest":
-        filtered.sort((a, b) => Number(b.isNew) - Number(a.isNew));
+        filtered.sort(
+          (a, b) =>
+            Number(b.isNew) - Number(a.isNew),
+        );
         break;
 
       case "popular":
         filtered.sort(
-          (a, b) => Number(b.reviews || 0) - Number(a.reviews || 0),
+          (a, b) =>
+            Number(b.reviews || 0) -
+            Number(a.reviews || 0),
         );
         break;
 
       default:
         filtered.sort(
-          (a, b) => Number(b.isBestSeller) - Number(a.isBestSeller),
+          (a, b) =>
+            Number(b.isBestSeller) -
+            Number(a.isBestSeller),
         );
         break;
     }
@@ -171,19 +199,31 @@ const Shop = ({
 
     // Filter change hone par page 1
     setCurrentPage(1);
-  }, [products, searchQuery, activeCategory, sortBy, priceRange, inStockOnly]);
+  }, [
+    products,
+    searchQuery,
+    activeCategory,
+    sortBy,
+    priceRange,
+    inStockOnly,
+  ]);
 
   // =====================================================
   // PAGINATION
   // =====================================================
 
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+  const totalPages = Math.ceil(
+    filteredProducts.length / productsPerPage,
+  );
 
-  const startIndex = (currentPage - 1) * productsPerPage;
+  const startIndex =
+    (currentPage - 1) * productsPerPage;
 
-  const endIndex = startIndex + productsPerPage;
+  const endIndex =
+    startIndex + productsPerPage;
 
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+  const currentProducts =
+    filteredProducts.slice(startIndex, endIndex);
 
   // =====================================================
   // NEXT
@@ -263,7 +303,9 @@ const Shop = ({
               {/* FILTER HEADER */}
 
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-gray-800">Filters</h3>
+                <h3 className="font-bold text-gray-800">
+                  Filters
+                </h3>
 
                 <button
                   onClick={handleReset}
@@ -284,7 +326,9 @@ const Shop = ({
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) =>
+                    setSearchQuery(e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -306,23 +350,30 @@ const Shop = ({
                         type="radio"
                         name="category"
                         value={category}
-                        checked={activeCategory === category}
+                        checked={
+                          activeCategory === category
+                        }
                         onChange={(e) => {
-                          setActiveCategory(e.target.value);
+                          setActiveCategory(
+                            e.target.value,
+                          );
 
                           setCurrentPage(1);
                         }}
                         className="text-blue-600"
                       />
 
-                      <span className="text-sm text-gray-700">{category}</span>
+                      <span className="text-sm text-gray-700">
+                        {category}
+                      </span>
 
                       <span className="text-xs text-gray-400 ml-auto">
                         (
                         {
                           products.filter(
                             (p) =>
-                              category === "All" || p.category === category,
+                              category === "All" ||
+                              p.category === category,
                           ).length
                         }
                         )
@@ -340,7 +391,9 @@ const Shop = ({
                 </label>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">₹0</span>
+                  <span className="text-sm text-gray-500">
+                    ₹0
+                  </span>
 
                   <input
                     type="range"
@@ -362,9 +415,13 @@ const Shop = ({
                 </div>
 
                 <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>Min: ₹{priceRange.min}</span>
+                  <span>
+                    Min: ₹{priceRange.min}
+                  </span>
 
-                  <span>Max: ₹{priceRange.max}</span>
+                  <span>
+                    Max: ₹{priceRange.max}
+                  </span>
                 </div>
               </div>
 
@@ -379,11 +436,15 @@ const Shop = ({
                   <input
                     type="checkbox"
                     checked={inStockOnly}
-                    onChange={(e) => setInStockOnly(e.target.checked)}
+                    onChange={(e) =>
+                      setInStockOnly(e.target.checked)
+                    }
                     className="text-blue-600"
                   />
 
-                  <span className="text-sm text-gray-700">In Stock Only</span>
+                  <span className="text-sm text-gray-700">
+                    In Stock Only
+                  </span>
                 </label>
               </div>
 
@@ -396,20 +457,34 @@ const Shop = ({
 
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
+                  onChange={(e) =>
+                    setSortBy(e.target.value)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="featured">Featured</option>
+                  <option value="featured">
+                    Featured
+                  </option>
 
-                  <option value="popular">Most Popular</option>
+                  <option value="popular">
+                    Most Popular
+                  </option>
 
-                  <option value="rating">Highest Rated</option>
+                  <option value="rating">
+                    Highest Rated
+                  </option>
 
-                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-low">
+                    Price: Low to High
+                  </option>
 
-                  <option value="price-high">Price: High to Low</option>
+                  <option value="price-high">
+                    Price: High to Low
+                  </option>
 
-                  <option value="newest">Newest</option>
+                  <option value="newest">
+                    Newest
+                  </option>
                 </select>
               </div>
             </div>
@@ -420,22 +495,24 @@ const Shop = ({
           <div className="flex-1">
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map((item) => (
-                  <div
-                    key={item}
-                    className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse"
-                  >
-                    <div className="aspect-square bg-gray-200"></div>
+                {[1, 2, 3, 4, 5, 6].map(
+                  (item) => (
+                    <div
+                      key={item}
+                      className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse"
+                    >
+                      <div className="aspect-square bg-gray-200"></div>
 
-                    <div className="p-4 space-y-3">
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="p-4 space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
 
-                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
 
-                      <div className="h-8 bg-gray-200 rounded w-full"></div>
+                        <div className="h-8 bg-gray-200 rounded w-full"></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             ) : (
               <>
@@ -499,7 +576,9 @@ const Shop = ({
 
                     <button
                       onClick={handleNext}
-                      disabled={currentPage === totalPages}
+                      disabled={
+                        currentPage === totalPages
+                      }
                       className={`px-4 py-2 border rounded-lg transition ${
                         currentPage === totalPages
                           ? "text-gray-400 bg-gray-100 cursor-not-allowed"

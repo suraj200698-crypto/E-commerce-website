@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://e-commerce-website-i3qw.onrender.com";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -812,6 +812,6 @@ const Cart = () => {
       </div>
     </div>
   );
-};  
+};
 
 export default Cart;

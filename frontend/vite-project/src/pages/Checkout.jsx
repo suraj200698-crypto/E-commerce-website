@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:8000";
+const API_URL = "https://e-commerce-website-i3qw.onrender.com";
 
 // QR image inside:
 // frontend/public/WhatsApp Image 2026-08-21 at 10.01.26 PM.jpeg

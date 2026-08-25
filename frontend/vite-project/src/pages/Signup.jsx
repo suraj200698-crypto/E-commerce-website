@@ -1,9 +1,18 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "firebase/auth";
 
 import { auth } from "../firebase";
+
+// ======================================================
+// LIVE BACKEND URL
+// ======================================================
+
+const API_URL = "https://e-commerce-website-i3qw.onrender.com";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -54,7 +63,8 @@ const Signup = () => {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
   // ======================================================
   // PHONE SIGNUP
@@ -73,7 +83,10 @@ const Signup = () => {
         };
       }
     } catch (error) {
-      console.error("Saved phone signup data error:", error);
+      console.error(
+        "Saved phone signup data error:",
+        error
+      );
     }
 
     return {
@@ -86,7 +99,9 @@ const Signup = () => {
 
   const [phoneMode, setPhoneMode] = useState(false);
 
-  const [phone, setPhone] = useState(savedPhoneData.phone);
+  const [phone, setPhone] = useState(
+    savedPhoneData.phone
+  );
 
   const [phoneOTP, setPhoneOTP] = useState("");
 
@@ -94,9 +109,12 @@ const Signup = () => {
 
   const [phoneLoading, setPhoneLoading] = useState(false);
 
-  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [confirmationResult, setConfirmationResult] =
+    useState(null);
 
-  const [phoneName, setPhoneName] = useState(savedPhoneData.phoneName);
+  const [phoneName, setPhoneName] = useState(
+    savedPhoneData.phoneName
+  );
 
   // ======================================================
   // HANDLE EMAIL INPUT
@@ -115,7 +133,11 @@ const Signup = () => {
     // PASSWORD NEVER SAVED
     // ====================================================
 
-    if (name === "firstName" || name === "lastName" || name === "email") {
+    if (
+      name === "firstName" ||
+      name === "lastName" ||
+      name === "email"
+    ) {
       const updatedData = {
         ...formData,
         [name]: value,
@@ -127,7 +149,7 @@ const Signup = () => {
           firstName: updatedData.firstName,
           lastName: updatedData.lastName,
           email: updatedData.email,
-        }),
+        })
       );
     }
   };
@@ -140,49 +162,75 @@ const Signup = () => {
     e.preventDefault();
 
     // Password match
-    if (formData.password !== formData.confirmPassword) {
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
       alert("Passwords do not match!");
       return;
     }
 
     // Password length
     if (formData.password.length < 6) {
-      alert("Password must be at least 6 characters.");
+      alert(
+        "Password must be at least 6 characters."
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      const fullName =
+        `${formData.firstName} ${formData.lastName}`.trim();
 
-      const response = await fetch("http://localhost:8000/api/users/register", {
-        method: "POST",
+      // ==================================================
+      // LIVE BACKEND REGISTER API
+      // ==================================================
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await fetch(
+        `${API_URL}/api/users/register`,
+        {
+          method: "POST",
 
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          name: fullName,
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            name: fullName,
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
 
       const data = await response.json();
 
-      console.log("REGISTER RESPONSE:", data);
+      console.log(
+        "REGISTER STATUS:",
+        response.status
+      );
+
+      console.log(
+        "REGISTER RESPONSE:",
+        data
+      );
 
       if (!response.ok || !data.success) {
-        alert(data.message || "Registration failed.");
+        alert(
+          data.message ||
+            "Registration failed."
+        );
         return;
       }
 
-      // Keep name/email data saved.
-      // Password is NOT saved.
+      // ==================================================
+      // KEEP SAFE SIGNUP DATA
+      // PASSWORD IS NEVER SAVED
+      // ==================================================
 
       localStorage.setItem(
         "signupFormData",
@@ -190,10 +238,16 @@ const Signup = () => {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-        }),
+        })
       );
 
-      alert("Account created successfully! OTP has been sent to your email.");
+      alert(
+        "Account created successfully! OTP has been sent to your email."
+      );
+
+      // ==================================================
+      // GO TO OTP PAGE
+      // ==================================================
 
       navigate("/verify-otp", {
         state: {
@@ -201,10 +255,13 @@ const Signup = () => {
         },
       });
     } catch (error) {
-      console.error("SIGNUP ERROR:", error);
+      console.error(
+        "SIGNUP ERROR:",
+        error
+      );
 
       alert(
-        "Unable to connect to server. Please make sure backend is running.",
+        "Unable to connect to server. Please check your internet connection or live backend."
       );
     } finally {
       setLoading(false);
@@ -220,21 +277,26 @@ const Signup = () => {
       return window.recaptchaVerifier;
     }
 
-    window.recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "signup-recaptcha-container",
-      {
-        size: "normal",
+    window.recaptchaVerifier =
+      new RecaptchaVerifier(
+        auth,
+        "signup-recaptcha-container",
+        {
+          size: "normal",
 
-        callback: () => {
-          console.log("Signup reCAPTCHA verified");
-        },
+          callback: () => {
+            console.log(
+              "Signup reCAPTCHA verified"
+            );
+          },
 
-        "expired-callback": () => {
-          console.log("Signup reCAPTCHA expired");
-        },
-      },
-    );
+          "expired-callback": () => {
+            console.log(
+              "Signup reCAPTCHA expired"
+            );
+          },
+        }
+      );
 
     return window.recaptchaVerifier;
   };
@@ -253,7 +315,7 @@ const Signup = () => {
       JSON.stringify({
         phoneName: value,
         phone,
-      }),
+      })
     );
   };
 
@@ -262,7 +324,9 @@ const Signup = () => {
   // ======================================================
 
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    const value = e.target.value
+      .replace(/\D/g, "")
+      .slice(0, 10);
 
     setPhone(value);
 
@@ -271,7 +335,7 @@ const Signup = () => {
       JSON.stringify({
         phoneName,
         phone: value,
-      }),
+      })
     );
   };
 
@@ -286,12 +350,16 @@ const Signup = () => {
     }
 
     if (!phone) {
-      alert("Please enter your phone number.");
+      alert(
+        "Please enter your phone number."
+      );
       return;
     }
 
     if (!/^\d{10}$/.test(phone)) {
-      alert("Please enter a valid 10-digit Indian mobile number.");
+      alert(
+        "Please enter a valid 10-digit Indian mobile number."
+      );
       return;
     }
 
@@ -300,25 +368,38 @@ const Signup = () => {
 
       const fullPhoneNumber = `+91${phone}`;
 
-      console.log("Sending Firebase OTP to:", fullPhoneNumber);
-
-      const appVerifier = setupRecaptcha();
-
-      const result = await signInWithPhoneNumber(
-        auth,
-        fullPhoneNumber,
-        appVerifier,
+      console.log(
+        "Sending Firebase OTP to:",
+        fullPhoneNumber
       );
+
+      const appVerifier =
+        setupRecaptcha();
+
+      const result =
+        await signInWithPhoneNumber(
+          auth,
+          fullPhoneNumber,
+          appVerifier
+        );
 
       setConfirmationResult(result);
 
       setPhoneOTPSent(true);
 
-      alert("OTP sent successfully to your phone.");
+      alert(
+        "OTP sent successfully to your phone."
+      );
     } catch (error) {
-      console.error("PHONE SIGNUP OTP ERROR:", error);
+      console.error(
+        "PHONE SIGNUP OTP ERROR:",
+        error
+      );
 
-      alert(error.message || "Unable to send OTP. Please try again.");
+      alert(
+        error.message ||
+          "Unable to send OTP. Please try again."
+      );
 
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
@@ -340,7 +421,9 @@ const Signup = () => {
     }
 
     if (phoneOTP.length !== 6) {
-      alert("Please enter a valid 6-digit OTP.");
+      alert(
+        "Please enter a valid 6-digit OTP."
+      );
       return;
     }
 
@@ -352,22 +435,31 @@ const Signup = () => {
     try {
       setPhoneLoading(true);
 
-      const result = await confirmationResult.confirm(phoneOTP);
+      const result =
+        await confirmationResult.confirm(
+          phoneOTP
+        );
 
       const firebaseUser = result.user;
 
-      console.log("FIREBASE PHONE USER:", firebaseUser);
+      console.log(
+        "FIREBASE PHONE USER:",
+        firebaseUser
+      );
 
-      const firebaseToken = await firebaseUser.getIdToken();
+      const firebaseToken =
+        await firebaseUser.getIdToken();
 
-      console.log("Firebase ID Token received");
+      console.log(
+        "Firebase ID Token received"
+      );
 
       // ==================================================
-      // SEND FIREBASE TOKEN TO ECOSHOP BACKEND
+      // SEND FIREBASE TOKEN TO LIVE ECOSHOP BACKEND
       // ==================================================
 
       const response = await fetch(
-        "http://localhost:8000/api/users/firebase-phone",
+        `${API_URL}/api/users/firebase-phone`,
         {
           method: "POST",
 
@@ -379,15 +471,26 @@ const Signup = () => {
             idToken: firebaseToken,
             name: phoneName.trim(),
           }),
-        },
+        }
       );
 
       const data = await response.json();
 
-      console.log("FIREBASE PHONE SIGNUP RESPONSE:", data);
+      console.log(
+        "FIREBASE PHONE SIGNUP STATUS:",
+        response.status
+      );
+
+      console.log(
+        "FIREBASE PHONE SIGNUP RESPONSE:",
+        data
+      );
 
       if (!response.ok || !data.success) {
-        alert(data.message || "Phone signup failed.");
+        alert(
+          data.message ||
+            "Phone signup failed."
+        );
         return;
       }
 
@@ -395,30 +498,52 @@ const Signup = () => {
       // SAVE ECOSHOP LOGIN DATA
       // ==================================================
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem(
+        "token",
+        data.token
+      );
 
-      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
 
-      localStorage.setItem("firebaseToken", firebaseToken);
+      localStorage.setItem(
+        "firebaseToken",
+        firebaseToken
+      );
 
-      localStorage.setItem("firebasePhone", firebaseUser.phoneNumber || "");
+      localStorage.setItem(
+        "firebasePhone",
+        firebaseUser.phoneNumber || ""
+      );
 
-      // Keep phone signup details
+      // ==================================================
+      // KEEP PHONE SIGNUP DETAILS
+      // ==================================================
+
       localStorage.setItem(
         "signupPhoneData",
         JSON.stringify({
           phoneName,
           phone,
-        }),
+        })
       );
 
-      alert("Phone signup successful! Welcome to EcoShop.");
+      alert(
+        "Phone signup successful! Welcome to EcoShop."
+      );
 
       navigate("/");
     } catch (error) {
-      console.error("PHONE OTP VERIFY ERROR:", error);
+      console.error(
+        "PHONE OTP VERIFY ERROR:",
+        error
+      );
 
-      alert("Invalid OTP or phone authentication failed. Please try again.");
+      alert(
+        "Invalid OTP or phone authentication failed. Please try again."
+      );
     } finally {
       setPhoneLoading(false);
     }
@@ -456,8 +581,13 @@ const Signup = () => {
   // ======================================================
 
   const clearSavedSignupData = () => {
-    localStorage.removeItem("signupFormData");
-    localStorage.removeItem("signupPhoneData");
+    localStorage.removeItem(
+      "signupFormData"
+    );
+
+    localStorage.removeItem(
+      "signupPhoneData"
+    );
 
     setFormData({
       firstName: "",
@@ -478,12 +608,15 @@ const Signup = () => {
 
   return (
     <div className="min-h-[80vh] bg-gray-50 flex items-center justify-center px-4 py-10">
+
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8">
+
         {/* ==================================================
             HEADER
         ================================================== */}
 
         <div className="text-center mb-8">
+
           <div className="w-14 h-14 mx-auto bg-blue-600 text-white rounded-xl flex items-center justify-center text-2xl font-bold">
             E
           </div>
@@ -492,7 +625,10 @@ const Signup = () => {
             Create Account
           </h1>
 
-          <p className="text-gray-500 mt-2">Join EcoShop today</p>
+          <p className="text-gray-500 mt-2">
+            Join EcoShop today
+          </p>
+
         </div>
 
         {/* ==================================================
@@ -501,6 +637,7 @@ const Signup = () => {
 
         {phoneMode ? (
           <div>
+
             <h2 className="text-xl font-semibold text-gray-800 mb-5">
               Sign Up with Phone
             </h2>
@@ -508,6 +645,7 @@ const Signup = () => {
             {/* NAME */}
 
             <div className="mb-5">
+
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Your Name
               </label>
@@ -515,11 +653,17 @@ const Signup = () => {
               <input
                 type="text"
                 value={phoneName}
-                onChange={handlePhoneNameChange}
+                onChange={
+                  handlePhoneNameChange
+                }
                 placeholder="Enter your name"
-                disabled={phoneOTPSent || phoneLoading}
+                disabled={
+                  phoneOTPSent ||
+                  phoneLoading
+                }
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
               />
+
             </div>
 
             {/* PHONE */}
@@ -529,6 +673,7 @@ const Signup = () => {
             </label>
 
             <div className="flex gap-2 mb-4">
+
               <div className="border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 font-semibold">
                 +91
               </div>
@@ -536,16 +681,25 @@ const Signup = () => {
               <input
                 type="tel"
                 value={phone}
-                onChange={handlePhoneChange}
+                onChange={
+                  handlePhoneChange
+                }
                 placeholder="Enter 10-digit number"
-                disabled={phoneOTPSent || phoneLoading}
+                disabled={
+                  phoneOTPSent ||
+                  phoneLoading
+                }
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
               />
+
             </div>
 
             {/* RECAPTCHA */}
 
-            <div id="signup-recaptcha-container" className="mb-4"></div>
+            <div
+              id="signup-recaptcha-container"
+              className="mb-4"
+            ></div>
 
             {/* SEND OTP */}
 
@@ -556,7 +710,9 @@ const Signup = () => {
                 disabled={phoneLoading}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60"
               >
-                {phoneLoading ? "Sending OTP..." : "Send OTP"}
+                {phoneLoading
+                  ? "Sending OTP..."
+                  : "Send OTP"}
               </button>
             )}
 
@@ -564,6 +720,7 @@ const Signup = () => {
 
             {phoneOTPSent && (
               <div className="mt-5">
+
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Enter OTP
                 </label>
@@ -572,7 +729,11 @@ const Signup = () => {
                   type="text"
                   value={phoneOTP}
                   onChange={(e) =>
-                    setPhoneOTP(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    setPhoneOTP(
+                      e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 6)
+                    )
                   }
                   placeholder="Enter 6-digit OTP"
                   maxLength={6}
@@ -581,7 +742,9 @@ const Signup = () => {
 
                 <button
                   type="button"
-                  onClick={verifyPhoneOTP}
+                  onClick={
+                    verifyPhoneOTP
+                  }
                   disabled={phoneLoading}
                   className="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-60"
                 >
@@ -589,6 +752,7 @@ const Signup = () => {
                     ? "Creating Account..."
                     : "Verify & Create Account"}
                 </button>
+
               </div>
             )}
 
@@ -601,17 +765,25 @@ const Signup = () => {
             >
               ← Sign Up with Email & Password
             </button>
+
           </div>
         ) : (
+
           /* ==================================================
              EMAIL SIGNUP MODE
           ================================================== */
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
+
             {/* FIRST + LAST NAME */}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
               <div>
+
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   First Name
                 </label>
@@ -619,7 +791,9 @@ const Signup = () => {
                 <input
                   type="text"
                   name="firstName"
-                  value={formData.firstName}
+                  value={
+                    formData.firstName
+                  }
                   onChange={handleChange}
                   placeholder="First name"
                   required
@@ -627,9 +801,11 @@ const Signup = () => {
                   autoComplete="given-name"
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                 />
+
               </div>
 
               <div>
+
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Last Name
                 </label>
@@ -637,7 +813,9 @@ const Signup = () => {
                 <input
                   type="text"
                   name="lastName"
-                  value={formData.lastName}
+                  value={
+                    formData.lastName
+                  }
                   onChange={handleChange}
                   placeholder="Last name"
                   required
@@ -645,12 +823,15 @@ const Signup = () => {
                   autoComplete="family-name"
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                 />
+
               </div>
+
             </div>
 
             {/* EMAIL */}
 
             <div>
+
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email
               </label>
@@ -666,20 +847,29 @@ const Signup = () => {
                 autoComplete="email"
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
               />
+
             </div>
 
             {/* PASSWORD */}
 
             <div>
+
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
               </label>
 
               <div className="relative">
+
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
                   name="password"
-                  value={formData.password}
+                  value={
+                    formData.password
+                  }
                   onChange={handleChange}
                   placeholder="Create password"
                   required
@@ -691,27 +881,43 @@ const Signup = () => {
 
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() =>
+                    setShowPassword(
+                      !showPassword
+                    )
+                  }
                   disabled={loading}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600 text-xl"
                 >
-                  {showPassword ? "🙈" : "👁️"}
+                  {showPassword
+                    ? "🙈"
+                    : "👁️"}
                 </button>
+
               </div>
+
             </div>
 
             {/* CONFIRM PASSWORD */}
 
             <div>
+
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Confirm Password
               </label>
 
               <div className="relative">
+
                 <input
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={
+                    showConfirmPassword
+                      ? "text"
+                      : "password"
+                  }
                   name="confirmPassword"
-                  value={formData.confirmPassword}
+                  value={
+                    formData.confirmPassword
+                  }
                   onChange={handleChange}
                   placeholder="Confirm password"
                   required
@@ -723,20 +929,36 @@ const Signup = () => {
 
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() =>
+                    setShowConfirmPassword(
+                      !showConfirmPassword
+                    )
+                  }
                   disabled={loading}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600 text-xl"
                 >
-                  {showConfirmPassword ? "🙈" : "👁️"}
+                  {showConfirmPassword
+                    ? "🙈"
+                    : "👁️"}
                 </button>
+
               </div>
+
             </div>
 
             {/* TERMS */}
 
             <label className="flex gap-2 text-sm text-gray-600">
-              <input type="checkbox" required disabled={loading} />I agree to
-              the Terms & Conditions
+
+              <input
+                type="checkbox"
+                required
+                disabled={loading}
+              />
+
+              I agree to the Terms &
+              Conditions
+
             </label>
 
             {/* CREATE ACCOUNT */}
@@ -746,8 +968,11 @@ const Signup = () => {
               disabled={loading}
               className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? "Creating Account..." : "Create Account"}
+              {loading
+                ? "Creating Account..."
+                : "Create Account"}
             </button>
+
           </form>
         )}
 
@@ -757,12 +982,17 @@ const Signup = () => {
 
         {!phoneMode && (
           <>
+
             <div className="flex items-center gap-3 my-6">
-              <div className="flex-1 h-px bg-gray-200"></div>
-
-              <span className="text-sm text-gray-400">OR</span>
 
               <div className="flex-1 h-px bg-gray-200"></div>
+
+              <span className="text-sm text-gray-400">
+                OR
+              </span>
+
+              <div className="flex-1 h-px bg-gray-200"></div>
+
             </div>
 
             <button
@@ -772,6 +1002,7 @@ const Signup = () => {
             >
               📱 Sign Up with Phone
             </button>
+
           </>
         )}
 
@@ -779,19 +1010,28 @@ const Signup = () => {
             CLEAR SAVED DATA
         ================================================== */}
 
-        {(formData.firstName ||
+        {(
+          formData.firstName ||
           formData.lastName ||
           formData.email ||
           phoneName ||
-          phone) && (
+          phone
+        ) && (
+
           <button
             type="button"
-            onClick={clearSavedSignupData}
-            disabled={loading || phoneLoading}
+            onClick={
+              clearSavedSignupData
+            }
+            disabled={
+              loading ||
+              phoneLoading
+            }
             className="w-full mt-4 text-sm text-gray-500 hover:text-red-600 hover:underline"
           >
             Clear saved details
           </button>
+
         )}
 
         {/* ==================================================
@@ -799,14 +1039,18 @@ const Signup = () => {
         ================================================== */}
 
         <p className="text-center text-gray-500 mt-6">
+
           Already have an account?{" "}
+
           <Link
             to="/login"
             className="text-blue-600 font-semibold hover:underline"
           >
             Login
           </Link>
+
         </p>
+
       </div>
     </div>
   );
