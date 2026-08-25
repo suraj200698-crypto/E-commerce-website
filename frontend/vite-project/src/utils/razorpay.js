@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000";
+const API_URL = "https://e-commerce-website-i3qw.onrender.com";
 
 export const startRazorpayPayment = async (amount) => {
   try {
