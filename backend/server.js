@@ -18,6 +18,7 @@ import connectDB from "./db/cannect.js";
 // MODELS
 // ======================================================
 
+import User from "./models/userModel.js";
 import Product from "./models/productModel.js";
 import Order from "./models/orderModel.js";
 
@@ -91,28 +92,32 @@ const allowedOrigins = [
   "http://127.0.0.1:5176",
 
   // ====================================================
-  // PRODUCTION FRONTEND
+  // PRODUCTION FRONTEND - RENDER
   // ====================================================
 
   "https://ecoshop-frontend-6cje.onrender.com",
 ];
 
+// ======================================================
+// CORS MIDDLEWARE
+// ======================================================
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Postman / curl / server-to-server requests
+      // Allow requests without Origin
+      // Example: Postman / curl / server-to-server
       if (!origin) {
         return callback(null, true);
       }
 
       if (allowedOrigins.includes(origin)) {
+        console.log("CORS ALLOWED:", origin);
+
         return callback(null, true);
       }
 
-      console.log(
-        "CORS BLOCKED ORIGIN:",
-        origin
-      );
+      console.log("CORS BLOCKED ORIGIN:", origin);
 
       return callback(
         new Error("Not allowed by CORS")
