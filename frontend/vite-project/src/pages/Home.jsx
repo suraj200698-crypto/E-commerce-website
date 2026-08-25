@@ -5,55 +5,89 @@ import HeroSection from "../components/HeroSection";
 import ProductGrid from "../components/ProductGrid";
 import NewsletterSection from "../components/NewsletterSection";
 
+const API_URL = "https://e-commerce-website-i3qw.onrender.com";
+
 const Home = () => {
   const navigate = useNavigate();
 
+  const [allProducts, setAllProducts] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [bestSellers, setBestSellers] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // ================= LOAD PRODUCTS FROM BACKEND =================
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
 
-        const response = await fetch("http://localhost:8000/api/products");
+        const response = await fetch(`${API_URL}/api/products`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
 
         const data = await response.json();
 
-        if (data.success) {
-          // MongoDB _id ko frontend id mein convert kar rahe hain
+        console.log("PRODUCT API RESPONSE:", data);
+
+        if (data.success && Array.isArray(data.products)) {
           const formattedProducts = data.products.map((product) => ({
             ...product,
             id: product._id,
           }));
 
-          // FEATURED PRODUCTS
+          console.log("FORMATTED PRODUCTS:", formattedProducts);
+
+          setAllProducts(formattedProducts);
+
+          // Featured Products
+          const featured = formattedProducts.filter(
+            (product) => product.isBestSeller || product.isNew
+          );
+
           setFeaturedProducts(
-            formattedProducts
-              .filter((product) => product.isBestSeller || product.isNew)
-              .slice(0, 8),
+            featured.length > 0
+              ? featured.slice(0, 8)
+              : formattedProducts.slice(0, 8)
           );
 
-          // BEST SELLERS
+          // Best Sellers
+          const best = formattedProducts.filter(
+            (product) => product.isBestSeller === true
+          );
+
           setBestSellers(
-            formattedProducts
-              .filter((product) => product.isBestSeller)
-              .slice(0, 8),
+            best.length > 0
+              ? best.slice(0, 8)
+              : formattedProducts.slice(0, 8)
           );
 
-          // NEW ARRIVALS
+          // New Arrivals
+          const newest = formattedProducts.filter(
+            (product) => product.isNew === true
+          );
+
           setNewArrivals(
-            formattedProducts.filter((product) => product.isNew).slice(0, 8),
+            newest.length > 0
+              ? newest.slice(0, 8)
+              : formattedProducts.slice(0, 8)
           );
         } else {
-          console.error("Failed to load products");
+          console.error("Products API returned invalid data.");
+
+          setAllProducts([]);
+          setFeaturedProducts([]);
+          setBestSellers([]);
+          setNewArrivals([]);
         }
       } catch (error) {
         console.error("Failed to fetch products:", error);
+
+        setAllProducts([]);
+        setFeaturedProducts([]);
+        setBestSellers([]);
+        setNewArrivals([]);
       } finally {
         setLoading(false);
       }
@@ -62,15 +96,12 @@ const Home = () => {
     fetchProducts();
   }, []);
 
-  // ================= VIEW ALL =================
-
   const handleViewAll = () => {
     navigate("/shop");
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* HERO */}
       <HeroSection />
 
       {/* FEATURES */}
@@ -81,9 +112,13 @@ const Home = () => {
               <div className="bg-blue-100 p-3 rounded-full">✓</div>
 
               <div>
-                <p className="font-semibold text-gray-800">Quality Products</p>
+                <p className="font-semibold text-gray-800">
+                  Quality Products
+                </p>
 
-                <p className="text-sm text-gray-500">100% genuine items</p>
+                <p className="text-sm text-gray-500">
+                  100% genuine items
+                </p>
               </div>
             </div>
 
@@ -91,9 +126,13 @@ const Home = () => {
               <div className="bg-green-100 p-3 rounded-full">⏱</div>
 
               <div>
-                <p className="font-semibold text-gray-800">Fast Delivery</p>
+                <p className="font-semibold text-gray-800">
+                  Fast Delivery
+                </p>
 
-                <p className="text-sm text-gray-500">Within 24-48 hours</p>
+                <p className="text-sm text-gray-500">
+                  Within 24-48 hours
+                </p>
               </div>
             </div>
 
@@ -101,9 +140,13 @@ const Home = () => {
               <div className="bg-purple-100 p-3 rounded-full">🔒</div>
 
               <div>
-                <p className="font-semibold text-gray-800">Secure Payment</p>
+                <p className="font-semibold text-gray-800">
+                  Secure Payment
+                </p>
 
-                <p className="text-sm text-gray-500">Protected transactions</p>
+                <p className="text-sm text-gray-500">
+                  Protected transactions
+                </p>
               </div>
             </div>
 
@@ -111,17 +154,20 @@ const Home = () => {
               <div className="bg-orange-100 p-3 rounded-full">↻</div>
 
               <div>
-                <p className="font-semibold text-gray-800">Easy Returns</p>
+                <p className="font-semibold text-gray-800">
+                  Easy Returns
+                </p>
 
-                <p className="text-sm text-gray-500">30-day return policy</p>
+                <p className="text-sm text-gray-500">
+                  30-day return policy
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ================= FEATURED ================= */}
-
+      {/* FEATURED PRODUCTS */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
@@ -130,7 +176,9 @@ const Home = () => {
                 Featured Products
               </h2>
 
-              <p className="text-gray-500 mt-1">Handpicked just for you</p>
+              <p className="text-gray-500 mt-1">
+                Handpicked just for you
+              </p>
             </div>
 
             <button
@@ -149,15 +197,18 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ================= BEST SELLERS ================= */}
-
+      {/* BEST SELLERS */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-800">Best Sellers</h2>
+              <h2 className="text-3xl font-bold text-gray-800">
+                Best Sellers
+              </h2>
 
-              <p className="text-gray-500 mt-1">Most popular products</p>
+              <p className="text-gray-500 mt-1">
+                Most popular products
+              </p>
             </div>
 
             <button
@@ -168,19 +219,26 @@ const Home = () => {
             </button>
           </div>
 
-          {loading ? <LoadingGrid /> : <ProductGrid products={bestSellers} />}
+          {loading ? (
+            <LoadingGrid />
+          ) : (
+            <ProductGrid products={bestSellers} />
+          )}
         </div>
       </section>
 
-      {/* ================= NEW ARRIVALS ================= */}
-
+      {/* NEW ARRIVALS */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-800">New Arrivals</h2>
+              <h2 className="text-3xl font-bold text-gray-800">
+                New Arrivals
+              </h2>
 
-              <p className="text-gray-500 mt-1">Fresh products just added</p>
+              <p className="text-gray-500 mt-1">
+                Fresh products just added
+              </p>
             </div>
 
             <button
@@ -191,12 +249,24 @@ const Home = () => {
             </button>
           </div>
 
-          {loading ? <LoadingGrid /> : <ProductGrid products={newArrivals} />}
+          {loading ? (
+            <LoadingGrid />
+          ) : (
+            <ProductGrid products={newArrivals} />
+          )}
         </div>
       </section>
 
-      {/* ================= SALE BANNER ================= */}
+      {/* TOTAL PRODUCTS INFO */}
+      {!loading && allProducts.length > 0 && (
+        <div className="text-center pb-8">
+          <p className="text-gray-500">
+            Showing products from our collection
+          </p>
+        </div>
+      )}
 
+      {/* SALE SECTION */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-8 md:p-12 text-white">
@@ -204,7 +274,10 @@ const Home = () => {
               <div>
                 <h3 className="text-3xl md:text-4xl font-bold mb-3">
                   Summer Sale!
-                  <span className="block text-yellow-300">Up to 70% Off</span>
+
+                  <span className="block text-yellow-300">
+                    Up to 70% Off
+                  </span>
                 </h3>
 
                 <p className="text-blue-100 mb-4">
@@ -222,9 +295,13 @@ const Home = () => {
               <div className="hidden md:block text-right">
                 <div className="text-6xl">🔥</div>
 
-                <p className="text-2xl font-bold mt-2">HOT DEALS</p>
+                <p className="text-2xl font-bold mt-2">
+                  HOT DEALS
+                </p>
 
-                <p className="text-blue-200">Limited stock available</p>
+                <p className="text-blue-200">
+                  Limited stock available
+                </p>
               </div>
             </div>
           </div>
@@ -235,8 +312,6 @@ const Home = () => {
     </div>
   );
 };
-
-// ================= LOADING =================
 
 const LoadingGrid = () => {
   return (
